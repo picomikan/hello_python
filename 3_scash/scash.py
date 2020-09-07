@@ -1,13 +1,39 @@
 # スカッシュゲーム（壁打ちテニス）
 # モジュールのインポート
+#  2020/09/07  MacでもBeep音
+#  (MEMO) tkinterが動かなかったが、以下でインストール
+#         https://qiita.com/survivor7777777/items/5a8e23d30822437ae9f9
 from tkinter import *
 import random
-import winsound
+import platform
 
 # ウィンドウの作成
 win = Tk()
 cv = Canvas(win, width = 640, height = 480)
 cv.pack()
+
+# 以下のサイトを参考に、Macでも(Winでも)Beepを出せるようにしました。
+#  https://www.yoheim.net/blog.php?q=20180313
+#  https://teratail.com/questions/214355
+def beep(freq, dur=100):
+    """
+        ビープ音を鳴らす.
+        @param freq 周波数
+        @param dur  継続時間（ms）
+    """
+    if platform.system() == "Windows":
+        # Windowsの場合は、winsoundというPython標準ライブラリを使います.
+        import winsound
+        beep(freq, dur)
+    else:
+        # Macの場合には、Macに標準インストールされたplayコマンドを使います.
+        #import os
+        #os.system('play -n synth %s sin %s >/dev/null 2>&1' % (dur/1000, freq))
+        #カクカクするので、非同期で鳴らす。標準出力/標準エラー出力は捨てる
+        # https://qiita.com/7of9/items/8085b9471d61d8475c91
+        import subprocess
+        command = ['play', '-n', 'synth', str(dur/1000), 'sin', str(freq)]
+        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # ゲームの初期化
 def init_game():
@@ -51,11 +77,11 @@ def move_ball():
     # 左右の壁に当たったかの判定
     if ball_ichi_x + ball_idou_x < 0 or ball_ichi_x + ball_idou_x > 640:
         ball_idou_x *= -1
-        winsound.Beep(1320, 50)
+        beep(1320, 50)
     # 天井に当たったかの判定
     if ball_ichi_y + ball_idou_y < 0:
         ball_idou_y *= -1
-        winsound.Beep(1320, 50)
+        beep(1320, 50)
     # ラケットに当たったかの判定
     if ball_ichi_y + ball_idou_y > 470 and (
         racket_ichi_x <= (ball_ichi_x + ball_idou_x)
@@ -64,7 +90,7 @@ def move_ball():
         ball_idou_y *= -1
         if random.randint(0, 1) == 0:
             ball_idou_x *= -1
-        winsound.Beep(2000, 50)
+        beep(2000, 50)
         mes = random.randint(0, 4)
         if mes == 0:
             message = "うまい！"
@@ -88,7 +114,8 @@ def move_ball():
         if mes == 2:
             message = "あーあ、見てられないね！"
         win.title(message + "　得点＝" + str(point))
-        winsound.Beep(200, 800)
+        #beep(200, 800)  # Macで音がよく聞こえなかったので、200 -> 300 に変更
+        beep(300, 800)
         is_gameover = True
     if 0 <= ball_ichi_x + ball_idou_x <= 640:
         ball_ichi_x = ball_ichi_x + ball_idou_x
