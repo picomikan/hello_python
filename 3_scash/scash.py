@@ -24,7 +24,7 @@ def beep(freq, dur=100):
     if platform.system() == "Windows":
         # Windowsの場合は、winsoundというPython標準ライブラリを使います.
         import winsound
-        beep(freq, dur)
+        winsound.Beep(freq, dur)
     else:
         # Macの場合には、Macに標準インストールされたplayコマンドを使います.
         #import os
